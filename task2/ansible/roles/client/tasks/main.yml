@@ -1,0 +1,4 @@
+---
+- name: Run client
+  become: true
+  raw: python3 /app/client.py &

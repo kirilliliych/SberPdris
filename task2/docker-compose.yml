@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  server:
+    container_name: server
+    image: host_img
+    networks:
+      local_network:
+        ipv4_address: 192.168.1.52
+
+  client:
+    container_name: client
+    image: host_img
+    networks:
+      local_network:
+        ipv4_address: 192.168.1.53
+
+  ansible:
+    container_name: ansible
+    image: ansible_img
+    command: ansible-playbook -v -i inventories/hosts playbook.yml
+    networks:
+      local_network:
+        ipv4_address: 192.168.1.55
+
+networks:
+  local_network:
+    driver: bridge
+    name: local_network
+    ipam:
+      config:
+        - subnet: 192.168.0.0/16
