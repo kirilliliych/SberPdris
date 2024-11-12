@@ -1,0 +1,19 @@
+version: "3.8"
+
+
+services:
+  server:
+    container_name: server
+    image: kirilliliych/pdris-task3-docker-server
+    build: server/
+    command: python3 -u ./server.py
+    ports:
+      - "5252:5252"
+      
+  client:
+    container_name: client
+    image: kirilliliych/pdris-task3-docker-client
+    build: client/
+    command: python3 -u ./client.py
+    depends_on:
+      - server
