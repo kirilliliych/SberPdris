@@ -1,25 +1,15 @@
 import socket
 
-PORT = 5252
-clients = {}
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+sock.bind(('', 5252))
+sock.listen(1)
+conn, addr = sock.accept()
 
-socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-socket.bind(('', PORT))
-socket.listen(5)
+print('connected client:', addr)
 
-try:
-    while True:
-        client_socket, client_addr = socket.accept()
-        clients[client_addr] = client_socket
-
-        while True:
-            buf = client_socket.recv(1024)
-            if (len(buf) == 0):
-                break
-
-        reply = 'Lorem ipsum dolor sit amet'
-        client_socket.sendall(bytes(reply.encode('utf-8')))
-        client_socket.shutdown(socket.SHUT_RDWR)
-        client_socket.close()
-except KeyboardInterrupt:
-    socket.close()
+while True:
+    client_data = conn.recv(1024)
+    if not client_data:
+        break
+    conn.sendall(bytes(str(client_data) + "consectetuer adipiscing elit.", 'utf-8'))
+conn.close()

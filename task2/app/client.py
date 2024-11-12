@@ -1,18 +1,14 @@
 import socket
+import time
 
-socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-socket.connect(('192.168.0.3', 5252))
-
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+sock.connect(('server', 5252))
 try:
-    socket.sendall(b'GET / HTTP/1.1\nHost: ya.ru\nConnection: close\n')
-    socket.shutdown(socket.SHUT_WR)
-    reply = b''
     while True:
-        buf = socket.recv(1024)
-        if (len(buf) == 0):
-            break
-        reply += buf
+        sock.sendall(b'Lorem ipsum dolor sit amet')
+        server_data = sock.recv(1024)
 
-    print(reply.decode('utf-8'))
+        print(server_data)
+        time.sleep(2)
 except KeyboardInterrupt:
-    socket.close()
+    sock.close()
