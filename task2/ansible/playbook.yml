@@ -1,0 +1,22 @@
+---
+- name: Ping hosts
+  hosts: hosts
+  become: false
+  tasks:
+    - name: ping all
+      ping:
+      register: ping_result
+
+- name: Launch server
+  hosts: server
+  gather_facts: false
+  roles:
+    - server
+  become: true
+
+- name: Launch client
+  hosts: client
+  gather_facts: false 
+  roles:
+    - client
+  become: true
