@@ -1,0 +1,62 @@
+pipeline {
+    agent any
+    tools {
+        maven 'JenkinsMaven'
+        allure 'JenkinsAllure'
+    }
+
+    stages {
+        stage("Download git repo") {
+            steps {
+                git branch: 'task4-jenkins', url: 'https://github.com/kirilliliych/SberPdris.git'
+            }
+        }
+        stage('Build & test') {
+            steps {
+                sh 'mvn clean install -f task4/app/pom.xml -U'
+            }
+            
+            post {
+                always {
+                    junit (
+                        stdioRetention: '',
+                        testResults: 'task4/app/target/surefire-reports/TEST-*.xml')
+                }
+            }
+        }
+        
+        stage('Gather test results to Allure') {
+            steps {
+                script {
+                  allure([
+                          includeProperties: false,
+                          jdk: '',
+                          results: [[path: 'task4/app/target/surefire-reports/']]
+                  ])
+                }
+            }
+        }
+        
+        stage('SonarQube') {
+            steps {
+                withSonarQubeEnv('SonarQubeInstallationJenkins') {
+                    sh 'mvn clean package sonar:sonar -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=admin -Dsonar.password=1A2b3c4d5e6! -f task4/app/pom.xml'
+                }
+            }
+        }
+        
+        stage('Push to docker registry') {
+            steps {
+                withCredentials([string(credentialsId: 'DOCKER_PASSWORD', variable: 'docker_pwd')]) {
+                    sh '''
+                    /usr/bin/docker login -u kirilliliych -p ${docker_pwd}
+                    /usr/bin/docker build -t javaapp ./task4
+                    /usr/bin/docker tag javaapp docker.io/kirilliliych/pdris-task4-docker-javaapp:latest
+                    /usr/bin/docker push kirilliliych/pdris-task4-docker-javaapp
+                '''
+                }
+            }
+        }
+    }
+}
+
